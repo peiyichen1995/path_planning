@@ -29,8 +29,8 @@ class PathPlanningModel(nn.Module):
         # Output Layer
         self.fc5 = nn.Linear(256, 2)
 
-    def forward(self, map_input, start_input, goal_input):
-        pdb.set_trace()
+    def forward(self, map_input, start_input, goal_input, npath):
+
         # Map encoding
         x = self.pool(torch.relu(self.conv1(map_input)))
         x = self.pool(torch.relu(self.conv2(x)))
@@ -48,7 +48,7 @@ class PathPlanningModel(nn.Module):
         z = torch.relu(self.fc4(z))
 
         # Reshape for LSTM
-        z = z.unsqueeze(1).repeat(1, map_input.size(2), 1)  # Repeat for each timestep
+        z = z.unsqueeze(1).repeat(1, npath, 1)  # Repeat for each timestep
 
         # LSTM for path prediction
         z, _ = self.lstm(z)

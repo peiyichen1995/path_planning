@@ -4,9 +4,11 @@ import re
 import os
 import shutil
 import uuid
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from random import shuffle
 from shutil import move
+
+import pdb
 
 import sys, types
 
@@ -224,11 +226,11 @@ sys.modules["dataset.map_sample"].__dict__["MapSample"] = MapSample
 
 
 class PathPlanningDataset(Dataset):
-    def __init__(self, data_dict):
-        self.maps = data_dict["maps"]
-        self.starts = data_dict["starts"]
-        self.ends = data_dict["ends"]
-        self.paths = data_dict["paths"]
+    def __init__(self, data_dict, device, size):
+        self.maps = data_dict["maps"][:size].to(device)
+        self.starts = data_dict["starts"][:size].to(device)
+        self.ends = data_dict["ends"][:size].to(device)
+        self.paths = data_dict["paths"][:size].to(device)
 
     def __len__(self):
         return len(self.maps)
@@ -252,3 +254,11 @@ def collate_fn(batch):
     ends = torch.stack(ends)
     paths = torch.stack(paths)
     return maps, starts, ends, paths
+
+
+def data_loader(file, bs, device, size):
+    data = torch.load(file)
+    data = PathPlanningDataset(data, device, size)
+    loader = DataLoader(data, batch_size=bs, collate_fn=collate_fn, shuffle=True)
+
+    return loader
