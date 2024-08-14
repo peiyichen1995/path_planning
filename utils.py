@@ -221,3 +221,34 @@ class MapDataset(Dataset):
 sys.modules["dataset"] = types.ModuleType("dataset")
 sys.modules["dataset.map_sample"] = types.ModuleType("map_sample")
 sys.modules["dataset.map_sample"].__dict__["MapSample"] = MapSample
+
+
+class PathPlanningDataset(Dataset):
+    def __init__(self, data_dict):
+        self.maps = data_dict["maps"]
+        self.starts = data_dict["starts"]
+        self.ends = data_dict["ends"]
+        self.paths = data_dict["paths"]
+
+    def __len__(self):
+        return len(self.maps)
+
+    def __getitem__(self, idx):
+        # Fetch the data for the given index
+        map_tensor = self.maps[idx]
+        start_tensor = self.starts[idx]
+        end_tensor = self.ends[idx]
+        path_tensor = self.paths[idx]
+
+        return map_tensor, start_tensor, end_tensor, path_tensor
+
+
+def collate_fn(batch):
+    maps, starts, ends, paths = zip(*batch)
+
+    # Convert lists of tensors to a single batch tensor
+    maps = torch.stack(maps)
+    starts = torch.stack(starts)
+    ends = torch.stack(ends)
+    paths = torch.stack(paths)
+    return maps, starts, ends, paths
