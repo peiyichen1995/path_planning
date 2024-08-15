@@ -9,8 +9,12 @@ import pdb
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    train_loader = utils.data_loader("train.pt", 500, device, 10000)
-    validation_loader = utils.data_loader("validation.pt", 500, device, 500)
+    train_loader = utils.data_loader(
+        "train.pt", batch_size=500, data_size=1000, device=device
+    )
+    validation_loader = utils.data_loader(
+        "validation.pt", batch_size=500, data_size=500, device=device
+    )
 
     # Model instantiation
     model = PathPlanningModel().to(device)

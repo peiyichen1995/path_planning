@@ -12,7 +12,9 @@ if __name__ == "__main__":
 
     model.load_state_dict(torch.load(cp_dir))
 
-    validation_loader = utils.data_loader("validation.pt", 500, device, 500)
+    validation_loader = utils.data_loader(
+        "validation.pt", batch_size=500, data_size=500, device=device
+    )
     criterion = torch.nn.MSELoss()
 
     validation_loss = 0

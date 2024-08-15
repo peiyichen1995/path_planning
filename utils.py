@@ -226,11 +226,13 @@ sys.modules["dataset.map_sample"].__dict__["MapSample"] = MapSample
 
 
 class PathPlanningDataset(Dataset):
-    def __init__(self, data_dict, device, size):
-        self.maps = data_dict["maps"][:size].to(device)
-        self.starts = data_dict["starts"][:size].to(device)
-        self.ends = data_dict["ends"][:size].to(device)
-        self.paths = data_dict["paths"][:size].to(device)
+    def __init__(self, data_dict, data_size, device=torch.device("cpu")):
+        self.maps = data_dict["maps"][:data_size]
+        self.starts = data_dict["starts"][:data_size]
+        self.ends = data_dict["ends"][:data_size]
+        self.paths = data_dict["paths"][:data_size]
+
+        self.to_(device)
 
     def __len__(self):
         return len(self.maps)
@@ -244,6 +246,12 @@ class PathPlanningDataset(Dataset):
 
         return map_tensor, start_tensor, end_tensor, path_tensor
 
+    def to_(self, *args, **kwargs):
+        self.maps = self.maps.to(*args, **kwargs)
+        self.starts = self.starts.to(*args, **kwargs)
+        self.ends = self.ends.to(*args, **kwargs)
+        self.paths = self.paths.to(*args, **kwargs)
+
 
 def collate_fn(batch):
     maps, starts, ends, paths = zip(*batch)
@@ -256,9 +264,11 @@ def collate_fn(batch):
     return maps, starts, ends, paths
 
 
-def data_loader(file, bs, device, size):
+def data_loader(file, batch_size, data_size, device=torch.device("cpu")):
     data = torch.load(file)
-    data = PathPlanningDataset(data, device, size)
-    loader = DataLoader(data, batch_size=bs, collate_fn=collate_fn, shuffle=True)
+    data = PathPlanningDataset(data, data_size, device=device)
+    loader = DataLoader(
+        data, batch_size=batch_size, collate_fn=collate_fn, shuffle=True
+    )
 
     return loader
